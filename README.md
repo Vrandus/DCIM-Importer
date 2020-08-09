@@ -32,5 +32,3 @@ go build import.go
 import <DCIM_src> <dst>
 ```
 ## Todo
-* Integrate with Windows Task Scheduler 
-*  Create GUI with Qt 
