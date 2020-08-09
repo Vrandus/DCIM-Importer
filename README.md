@@ -31,4 +31,8 @@ go build import.go
 ```
 import <DCIM_src> <dst>
 ```
+### Example
+```
+import H:/DCIM/ E:/Photos/
+```
 ## Todo
