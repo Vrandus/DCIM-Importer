@@ -8,16 +8,28 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
-type filePath struct {
+type fileInformation struct {
 	name string
 	path string
 }
 
+func whitelistedExtension(path string) bool {
+	whitelist := []string{".jpeg", ".jpg", ".cr3", ".png"}
+	extension := strings.ToLower(filepath.Ext(path))
+	for _, ext := range whitelist {
+		if ext == extension {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
-	var files []filePath
+	var files []fileInformation
 	var totalBytes int64
 
 	if len(os.Args) < 3 {
@@ -29,10 +41,12 @@ func main() {
 
 	err := filepath.Walk(srcPath, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
-			fi := filePath{name: info.Name(), path: path}
-			files = append(files, fi)
-			log.Printf("scanning: " + path)
-			totalBytes += info.Size()
+			fi := fileInformation{name: info.Name(), path: path}
+			if whitelistedExtension(path) {
+				files = append(files, fi)
+				log.Printf("scanning: " + path)
+				totalBytes += info.Size()
+			}
 		}
 		return nil
 	})
@@ -55,7 +69,11 @@ func main() {
 
 		clear()
 		photoDate := fileInfo.ModTime()
-		dstPath := os.Args[2] + strconv.Itoa(photoDate.Year()) + "/" + strconv.Itoa(int(photoDate.Month())) + " - " + photoDate.Month().String() + "/"
+		dstPath := os.Args[2]
+		if dstPath[len(dstPath)-1:] != "/" {
+			dstPath = dstPath + "/"
+		}
+		dstPath = dstPath + strconv.Itoa(photoDate.Year()) + "/" + strconv.Itoa(int(photoDate.Month())) + " - " + photoDate.Month().String() + "/"
 		timeLeft := (float32(totalBytes-transferredBytes) / 1000000) / transferSpeed
 		timeElapsed := (time.Now().UnixNano() - then) / 1000000000
 
